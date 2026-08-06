@@ -1,0 +1,11 @@
+# Project TODO
+
+## Backlog / Features 🧊
+- [ ] Implementing the meta-parser (bootstrapping)
+    - [ ] Define the syntax for grammar files (.g4 or .y files)
+    - [ ] Write a lexer and a parser for the parser generator.
+    - [ ] Build an AST representing the user grammar
+- [ ]
+- [ ]
+
+
