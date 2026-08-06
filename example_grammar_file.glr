@@ -1,0 +1,22 @@
+@prologue %{
+	// Add as many imports as the user wants
+	use crate::lexer::Token;
+	use crate::ast::{Expression, Statement};
+}%
+
+%tokens {}
+
+%start {}
+
+%rules {}
+
+@epilogue %{
+	// Add as many function as the user wants
+	fn report_error(line: usize, msg: &str) {
+		eprintln!("Parse Error at line {}: {}", line, usize);
+	}
+
+	fn main() {
+		// Test the generated parser
+	}
+}%
