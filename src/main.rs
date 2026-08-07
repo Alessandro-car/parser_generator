@@ -1,6 +1,6 @@
 mod meta_parser;
 use crate::meta_parser::lexer::Lexer;
-use crate::meta_parser::lexer::TokType;
+use crate::meta_parser::lexer::TokenType;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let mut lex = Lexer::new(contents);
     loop {
         let token = lex.get_next_token();
-        if token == TokType::Eof {
+        if token == TokenType::Eof {
             break;
         } else {
             println!("{:?}", token);

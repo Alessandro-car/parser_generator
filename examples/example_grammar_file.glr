@@ -1,22 +1,45 @@
+// calculator.glr
+// This is a complete grammar specification for a simple calculator.
+
 @prologue %{
-	// Add as many imports as the user wants
-	use crate::lexer::Token;
-	use crate::ast::{Expression, Statement};
+    use crate::ast::{Expression, Operator};
+    use std::num::ParseIntError;
 }%
 
-%tokens {}
+%tokens {
+    // Lexical rules defined with regular expressions
+    NUMBER = "[0-9]+";
+    PLUS   = "\+";
+    MINUS  = "\-";
+    MUL    = "\*";
+    DIV    = "/";
+    LPAREN = "\(";
+    RPAREN = "\)";
+    WS     = "[ \t\r\n]+";
+}
 
-%start {}
+%start Program
 
-%rules {}
+%rules {
+    // The Context-Free Grammar
+    Program ->
+        Expr ;
+
+    Expr ->
+        Expr PLUS Expr
+      | Expr MINUS Expr
+      | Expr MUL Expr
+      | Expr DIV Expr
+      | LPAREN Expr RPAREN
+      | NUMBER ;
+}
 
 @epilogue %{
-	// Add as many function as the user wants
-	fn report_error(line: usize, msg: &str) {
-		eprintln!("Parse Error at line {}: {}", line, usize);
-	}
+    pub fn report_error(line: usize, msg: &str) {
+        eprintln!("Parse Error [Line {}]: {}", line, msg);
+    }
 
-	fn main() {
-		// Test the generated parser
-	}
+    fn main() {
+        println!("Calculator parser generated successfully!");
+    }
 }%
