@@ -1,6 +1,8 @@
+//TODO: Handle Operator, StringLiteral, Semicolo and comments
+
 static KEYWORDS: &[&str] = &[
-    "@prologue", "@epilogue",
-    "%tokens", "%start", "%rules"
+    "prologue", "epilogue",
+    "tokens", "start", "rules"
 ];
 
 
@@ -12,21 +14,25 @@ pub enum TokType {
     Rbrace(char),
     Lbrace(char),
     CodeBlockStart,
-    CodeBlockEnd,
     RawCode(String),
+    Operator(String),
+    StringLiteral(String),
+    Semicolon(char),
     Error(String)
 }
 
 pub struct Lexer {
     input: Vec<char>,
-    position: usize
+    position: usize,
+    start_raw_code: bool
 }
 
 impl Lexer {
     pub fn new(content: String) -> Self {
         Lexer {
             input: content.chars().collect(),
-            position: 0
+            position: 0,
+            start_raw_code: false
         }
     }
 
@@ -54,14 +60,6 @@ impl Lexer {
         }
     }
 
-    fn get_keyword_or_identifier(&self, pattern: &str) -> TokType {
-        if KEYWORDS.contains(&pattern) {
-            TokType::Keyword(pattern.to_string())
-        } else {
-            TokType::Identifier(pattern.to_string())
-        }
-    }
-
     fn get_raw_code(&mut self) -> TokType {
         let mut raw_code: String = String::new();
         while let Some(ch) = self.peek() {
@@ -70,6 +68,7 @@ impl Lexer {
 
                 if let Some('%') = self.peek() {
                     self.advance();
+                    self.start_raw_code = false;
                     return TokType::RawCode(raw_code);
                 } else {
                     raw_code.push(ch);
@@ -83,8 +82,34 @@ impl Lexer {
         TokType::Error(String::from("Reached EOF without finding closing }%"))
     }
 
+    fn read_keyword_or_identifier(&mut self) -> TokType {
+        let mut pattern: String = String::new();
+        while let Some(ch) = self.peek() {
+            if ch.is_alphanumeric() || ch == '_' {
+                pattern.push(ch);
+                self.advance();
+            } else {
+                break;
+            }
+        }
+
+        if pattern.is_empty() {
+            return TokType::Error(String::from("Expected keyword or identifier"));
+        }
+
+        if KEYWORDS.contains(&pattern.as_str()) {
+            return TokType::Keyword(pattern);
+        } else {
+            return TokType::Identifier(pattern);
+        }
+    }
+
 
     pub fn get_next_token(&mut self) -> TokType {
+        if self.start_raw_code {
+            return self.get_raw_code();
+        }
+
         self.skip_whitespace();
 
         let Some(ch) = self.peek() else {
@@ -92,6 +117,7 @@ impl Lexer {
         };
 
         match ch {
+            '\0' => TokType::Eof,
             '{' => {
                 self.advance();
                 TokType::Lbrace(ch)
@@ -106,20 +132,24 @@ impl Lexer {
                 self.advance();
                 if let Some('{') = self.peek() {
                     self.advance();
-                    TokType::CodeBlockStart;
+                    self.start_raw_code = true;
+                    return TokType::CodeBlockStart;
                 } else {
-                    //TODO: Handle %start, %rules, ...
+                    return self.read_keyword_or_identifier();
                 }
             }
 
             '@' => {
-                //TODO: Handle @prologue, @epilogue
+                self.advance();
+                return self.read_keyword_or_identifier();
             }
 
             _ => {
                 //TODO: Handle general identifiers, like rules names, start symbols, etc
+                return self.read_keyword_or_identifier();
             }
         }
     }
+
 
 }
