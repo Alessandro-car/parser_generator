@@ -1,6 +1,7 @@
 mod meta_parser;
 use crate::meta_parser::lexer::Lexer;
 use crate::meta_parser::lexer::TokenType;
+use crate::meta_parser::parser::Parser;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -11,14 +12,8 @@ fn main() -> Result<()> {
 
     let contents = fs::read_to_string(filename).expect("Should have been able to read the file");
 
-    let mut lex = Lexer::new(contents);
-    loop {
-        let token = lex.get_next_token();
-        if token == TokenType::Eof {
-            break;
-        } else {
-            println!("{:?}", token);
-        }
-    }
+    let lex = Lexer::new(contents);
+    let mut parser = Parser::new(lex).expect("Failed to construct parser");
+    println!("{:#?}", parser.parse());
     Ok(())
 }
