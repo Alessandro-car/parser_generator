@@ -12,6 +12,20 @@ pub enum ASTNode {
     },
 }
 
+impl ASTNode {
+    pub fn get_rules(&self) -> &GrammarRuleSet {
+        match self {
+            ASTNode::GrammarFile { rules, .. } => rules,
+        }
+    }
+
+    pub fn get_token_set(&self) -> &TokenSet {
+        match self {
+            ASTNode::GrammarFile { tokens, .. } => tokens,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Prologue { raw_code: String }
 
@@ -21,8 +35,24 @@ pub struct Epilogue { raw_code: String }
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenDef { id: String, pattern: String }
 
+impl TokenDef {
+    pub fn get_id(&self) -> &String {
+        &self.id
+    }
+
+    pub fn get_pattern(&self) -> &String {
+        &self.pattern
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenSet { defs: Vec<TokenDef> }
+
+impl TokenSet {
+    pub fn get_defs(&self) -> &Vec<TokenDef> {
+        &self.defs
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GrammarRuleDef {
@@ -30,8 +60,24 @@ pub struct GrammarRuleDef {
     alternatives: Vec<Vec<String>>,
 }
 
+impl GrammarRuleDef {
+    pub fn get_lhs(&self) -> &String {
+        &self.lhs
+    }
+
+    pub fn get_alternatives(&self) -> &Vec<Vec<String>> {
+        &self.alternatives
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct GrammarRuleSet { rules: Vec<GrammarRuleDef> }
+
+impl GrammarRuleSet {
+    pub fn get_rules(&self) -> &Vec<GrammarRuleDef> {
+        &self.rules
+    }
+}
 
 
 pub struct Parser {
