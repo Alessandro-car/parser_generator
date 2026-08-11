@@ -1,6 +1,7 @@
 mod meta_parser;
 mod automaton;
 use crate::automaton::first::FirstSets;
+use crate::automaton::follow::FollowSets;
 use crate::meta_parser::lexer::Lexer;
 use crate::meta_parser::lexer::TokenType;
 use crate::meta_parser::parser::Parser;
@@ -18,5 +19,6 @@ fn main() -> Result<()> {
     let mut parser = Parser::new(lex).expect("Failed to construct parser");
     let ast = parser.parse();
     let first_set = FirstSets::build(ast.get_rules(), ast.get_token_set());
+    let follow_set = FollowSets::build(ast.get_rules(), ast.get_token_set(), ast.get_start_sym().clone(), first_set);
     Ok(())
 }

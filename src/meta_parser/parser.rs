@@ -24,6 +24,12 @@ impl ASTNode {
             ASTNode::GrammarFile { tokens, .. } => tokens,
         }
     }
+
+    pub fn get_start_sym(&self) -> &String {
+        match self {
+            ASTNode::GrammarFile { start, .. } => start,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

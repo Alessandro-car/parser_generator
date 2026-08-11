@@ -59,4 +59,8 @@ impl FirstSets {
 
         FirstSets { sets }
     }
+
+    pub fn get_set(&self) -> &HashMap<String, HashSet<String>> {
+        &self.sets
+    }
 }
