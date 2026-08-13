@@ -67,6 +67,13 @@ pub struct GrammarRuleDef {
 }
 
 impl GrammarRuleDef {
+    pub fn new(lhs: String, alternatives: Vec<Vec<String>>) -> Self {
+        GrammarRuleDef {
+            lhs,
+            alternatives
+        }
+    }
+
     pub fn get_lhs(&self) -> &String {
         &self.lhs
     }
@@ -82,6 +89,11 @@ pub struct GrammarRuleSet { rules: Vec<GrammarRuleDef> }
 impl GrammarRuleSet {
     pub fn get_rules(&self) -> &Vec<GrammarRuleDef> {
         &self.rules
+    }
+
+    pub fn with_appended_rule(mut self, rule: GrammarRuleDef) -> Self {
+        self.rules.push(rule);
+        self
     }
 }
 
