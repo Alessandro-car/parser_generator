@@ -2,15 +2,7 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use crate::meta_parser::parser::TokenSet;
 use crate::meta_parser::parser::GrammarRuleSet;
-
-fn is_token(symbol: String, token_set: TokenSet) -> bool {
-    for token_def in token_set.get_defs() {
-        if symbol == token_def.get_id().clone() {
-            return true;
-        }
-    }
-    return false;
-}
+use crate::automaton::symbol::is_token;
 
 pub struct FirstSets {
     sets: HashMap<String, HashSet<String>>,
@@ -36,7 +28,7 @@ impl FirstSets {
                     }
 
                     let first_symbol = &alternative[0];
-                    if is_token(first_symbol.to_string(), token_set.clone()) {
+                    if is_token(first_symbol, &token_set.clone()) {
                         let current_set = sets.get_mut(lhs).unwrap();
                         if current_set.insert(first_symbol.clone()) {
                             changed = true;
