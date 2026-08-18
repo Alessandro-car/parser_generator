@@ -28,6 +28,18 @@ impl Item {
     pub fn advanced(&self) -> Item {
         Item::new(self.rule_idx, self.alt_idx, self.dot + 1)
     }
+
+    pub fn get_rule_idx(&self) -> usize {
+        self.rule_idx
+    }
+
+    pub fn get_alt_idx(&self) -> usize {
+        self.alt_idx
+    }
+
+    pub fn get_dot(&self) -> usize {
+        self.dot
+    }
 }
 
 pub fn closure(items: BTreeSet<Item>, rules: &GrammarRuleSet, token_set: &TokenSet) -> BTreeSet<Item> {

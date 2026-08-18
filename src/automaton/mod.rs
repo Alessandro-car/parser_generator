@@ -4,3 +4,4 @@ pub mod augment;
 pub mod item;
 pub mod symbol;
 pub mod lr0;
+pub mod table;

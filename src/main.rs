@@ -6,9 +6,8 @@ use crate::meta_parser::lexer::Lexer;
 use crate::meta_parser::lexer::TokenType;
 use crate::meta_parser::parser::Parser;
 use crate::automaton::augment::augment;
-use crate::automaton::item::{closure, goto, format_item, Item};
 use crate::automaton::lr0::LR0Automaton;
-use std::collections::BTreeSet;
+use crate::automaton::table::ParseTables;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -27,7 +26,6 @@ fn main() -> Result<()> {
 
     let (augmented_rules, start_idx) = augment(ast.get_rules(), ast.get_start_sym());
     let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
-    println!("{:#?}", lr0.get_states());
-    println!("{:#?}", lr0.get_transitions());
+    println!("{:#?}", ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx));
     Ok(())
 }
