@@ -11,8 +11,19 @@
     - [X] Implement the parsing table constructors (Action and Goto tables)
     - [X] Write the conflict detector (Identifying Shift/Reduce and Reduce/Reduce conflicts)
 - [ ] The code emitter
-    - [ ] Design the runtime skeleton (the generic loop that reads the parsing table and processes tokens)
-    - [ ] Write the templating engine that injects the generated tables and the user's custom semantic action into the skeleton
-    - [ ] Ensure the emitted code is optmized (e.g. compressing sparse parsing tables to save memory)
+    - [ ] Symbol/rule tables
+        - [X] Sanitize grammar identifiers into valid Rust identifiers
+        - [ ] Emit a ```Token``` enum: one variant per terminal, carrying the lexeme(```Number(String)```) plus ```Eof```
+        - [ ] Emit a rule table mapping ```(rule_idx, alt_idx) -> (lhs_name, rhs_len)```
+    - [ ] Lexer generation
+        - [ ] Add ```regex``` as a dependency of the generated code
+        - [ ] For each ```TokenDef```, emit a compiled ```Regex```
+        - [ ] Emit a scanner doing maximal-munch: at each position, try all patterns, take the longest match, break ties by declaration order
+        - [ ] Decide how to handle "throwaway" tokens
+        - [ ] Add line/column tracking
 
+    - [ ] Table serialization
+        - [ ] Turn ```ParseTables.action``` and ```ParseTables.goto``` into something the emitted file can embed directly
+        - [ ] Emit ```Action``` as its own enum inside the generated file
+    - [ ]
 

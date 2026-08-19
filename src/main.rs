@@ -1,5 +1,6 @@
 mod meta_parser;
 mod automaton;
+mod emitter;
 use crate::automaton::first::FirstSets;
 use crate::automaton::follow::FollowSets;
 use crate::meta_parser::lexer::Lexer;
@@ -8,6 +9,7 @@ use crate::meta_parser::parser::Parser;
 use crate::automaton::augment::augment;
 use crate::automaton::lr0::LR0Automaton;
 use crate::automaton::table::ParseTables;
+use crate::emitter::symbol_gen::extract_identifiers;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -27,5 +29,6 @@ fn main() -> Result<()> {
     let (augmented_rules, start_idx) = augment(ast.get_rules(), ast.get_start_sym());
     let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
     println!("{:#?}", ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx));
+    println!("{:#?}", extract_identifiers(ast));
     Ok(())
 }
