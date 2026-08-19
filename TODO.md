@@ -11,10 +11,10 @@
     - [X] Implement the parsing table constructors (Action and Goto tables)
     - [X] Write the conflict detector (Identifying Shift/Reduce and Reduce/Reduce conflicts)
 - [ ] The code emitter
-    - [ ] Symbol/rule tables
+    - [X] Symbol/rule tables
         - [X] Sanitize grammar identifiers into valid Rust identifiers
-        - [ ] Emit a ```Token``` enum: one variant per terminal, carrying the lexeme(```Number(String)```) plus ```Eof```
-        - [ ] Emit a rule table mapping ```(rule_idx, alt_idx) -> (lhs_name, rhs_len)```
+        - [X] Emit a ```Token``` enum: one variant per terminal, carrying the lexeme(```Number(String)```) plus ```Eof```
+        - [X] Emit a rule table mapping ```(rule_idx, alt_idx) -> (lhs_name, rhs_len)```
     - [ ] Lexer generation
         - [ ] Add ```regex``` as a dependency of the generated code
         - [ ] For each ```TokenDef```, emit a compiled ```Regex```

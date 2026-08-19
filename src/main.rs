@@ -9,7 +9,7 @@ use crate::meta_parser::parser::Parser;
 use crate::automaton::augment::augment;
 use crate::automaton::lr0::LR0Automaton;
 use crate::automaton::table::ParseTables;
-use crate::emitter::symbol_gen::extract_identifiers;
+use crate::emitter::symbol_gen::Symbols;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -29,6 +29,8 @@ fn main() -> Result<()> {
     let (augmented_rules, start_idx) = augment(ast.get_rules(), ast.get_start_sym());
     let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
     println!("{:#?}", ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx));
-    println!("{:#?}", extract_identifiers(ast));
+    let symbols = Symbols::new(&ast);
+    println!("{}", symbols.generate_token_enum_code(&ast));
+    println!("{}", symbols.generate_rule_table_code());
     Ok(())
 }

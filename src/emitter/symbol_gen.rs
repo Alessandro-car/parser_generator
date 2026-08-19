@@ -1,4 +1,5 @@
 use crate::meta_parser::parser::ASTNode;
+use crate::automaton::symbol::is_token;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::OnceLock;
@@ -54,7 +55,7 @@ fn check_for_typos(identifiers: &[String], ast: &ASTNode) -> Result<(), String> 
     Ok(())
 }
 
-pub fn extract_identifiers(ast: ASTNode) -> HashMap<String, String> {
+fn extract_identifiers(ast: &ASTNode) -> HashMap<String, String> {
     let mut identifiers: Vec<String> = Vec::from(
         ast.get_token_set()
         .get_defs()
@@ -92,7 +93,59 @@ pub fn extract_identifiers(ast: ASTNode) -> HashMap<String, String> {
     sanitized_ids
 }
 
+pub struct Symbols {
+    identifiers: HashMap<String, String>,
+    rule_table: HashMap<(usize, usize), (String, usize)>
+}
 
+impl Symbols {
+    pub fn new(ast: &ASTNode) -> Self {
+        let identifiers = extract_identifiers(ast);
+        let mut rule_table = HashMap::new();
 
+        for (rule_idx, rule) in ast.get_rules().get_rules().iter().enumerate() {
+            for (alt_idx, alternative) in rule.get_alternatives().iter().enumerate() {
+                rule_table.insert((rule_idx, alt_idx), (rule.get_lhs().clone(), alternative.len()));
+            }
+        }
+        Symbols { identifiers, rule_table }
+    }
 
+    pub fn generate_token_enum_code(&self, ast: &ASTNode) -> String {
+        let mut code = String::from("#[derive(Debug, Clone, PartialEq)]\n");
+        code.push_str("pub enum Token {\n");
+
+        //Sort the map to guarantee deterministic output order
+        let mut sorted_identifiers: Vec<_> = self.identifiers.iter().collect();
+        sorted_identifiers.sort_by(|a, b| a.0.cmp(b.0));
+
+        for (id, old_id) in &self.identifiers {
+            if is_token(old_id, ast.get_token_set()) {
+                let line = format!("\t{}(String),\n", id);
+                code.push_str(line.as_str());
+            }
+        }
+
+        code.push_str("\tEof,\n");
+        code.push_str("\tError(String),\n");
+        code.push_str("}\n");
+        code
+    }
+
+    pub fn generate_rule_table_code(&self) -> String {
+        let mut code = String::from("pub static RULES: &[(&str, usize)] = &[\n");
+
+        //Collect the entries and sort them by their indices (rule_idx, alt_idx)
+        let mut sorted_rules: Vec<_> = self.rule_table.iter().collect();
+        sorted_rules.sort_by_key(|(indices, _val)| **indices);
+
+        for (_indices, (lhs, rhs_len)) in sorted_rules {
+            let line = format!("\t(\"{}\", {}),\n", lhs, rhs_len);
+            code.push_str(line.as_str());
+        }
+
+        code.push_str("];\n");
+        code
+    }
+}
 
