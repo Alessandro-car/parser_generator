@@ -15,12 +15,12 @@
         - [X] Sanitize grammar identifiers into valid Rust identifiers
         - [X] Emit a ```Token``` enum: one variant per terminal, carrying the lexeme(```Number(String)```) plus ```Eof```
         - [X] Emit a rule table mapping ```(rule_idx, alt_idx) -> (lhs_name, rhs_len)```
-    - [ ] Lexer generation
-        - [ ] Add ```regex``` as a dependency of the generated code
-        - [ ] For each ```TokenDef```, emit a compiled ```Regex```
-        - [ ] Emit a scanner doing maximal-munch: at each position, try all patterns, take the longest match, break ties by declaration order
-        - [ ] Decide how to handle "throwaway" tokens
-        - [ ] Add line/column tracking
+    - [X] Lexer generation
+        - [X] Add ```regex``` as a dependency of the generated code
+        - [X] For each ```TokenDef```, emit a compiled ```Regex```
+        - [X] Emit a scanner doing maximal-munch: at each position, try all patterns, take the longest match, break ties by declaration order
+        - [X] Decide how to handle "throwaway" tokens
+        - [X] Add line/column tracking
 
     - [ ] Table serialization
         - [ ] Turn ```ParseTables.action``` and ```ParseTables.goto``` into something the emitted file can embed directly

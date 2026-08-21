@@ -15,7 +15,11 @@
     DIV    = "/";
     LPAREN = "\(";
     RPAREN = "\)";
-    WS     = "[ \t\r\n]+";
+
+}
+
+%skip {
+	WS = "[ \t\r\n]+";
 }
 
 %start Program

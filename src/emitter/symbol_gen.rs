@@ -111,6 +111,14 @@ impl Symbols {
         Symbols { identifiers, rule_table }
     }
 
+    pub fn get_sanitized_ids(&self) -> &HashMap<String, String> {
+        &self.identifiers
+    }
+
+    pub fn get_rule_table(&self) -> &HashMap<(usize, usize), (String, usize)> {
+        &self.rule_table
+    }
+
     pub fn generate_token_enum_code(&self, ast: &ASTNode) -> String {
         let mut code = String::from("#[derive(Debug, Clone, PartialEq)]\n");
         code.push_str("pub enum Token {\n");

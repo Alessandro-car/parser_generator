@@ -10,6 +10,8 @@ use crate::automaton::augment::augment;
 use crate::automaton::lr0::LR0Automaton;
 use crate::automaton::table::ParseTables;
 use crate::emitter::symbol_gen::Symbols;
+use crate::emitter::lexer_gen::emit_lexer;
+use crate::emitter::dependency::*;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -30,7 +32,11 @@ fn main() -> Result<()> {
     let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
     println!("{:#?}", ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx));
     let symbols = Symbols::new(&ast);
+    println!("{}", insert_oncelock_dependency());
+    println!("{}", insert_regex_dependency());
     println!("{}", symbols.generate_token_enum_code(&ast));
     println!("{}", symbols.generate_rule_table_code());
+    println!("{}", emit_lexer(ast.get_token_set(), symbols.get_sanitized_ids()));
+
     Ok(())
 }

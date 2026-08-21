@@ -39,7 +39,11 @@ pub struct Prologue { raw_code: String }
 pub struct Epilogue { raw_code: String }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct TokenDef { id: String, pattern: String }
+pub struct TokenDef {
+    id: String,
+    pattern: String,
+    is_skip: bool
+}
 
 impl TokenDef {
     pub fn get_id(&self) -> &String {
@@ -49,6 +53,10 @@ impl TokenDef {
     pub fn get_pattern(&self) -> &String {
         &self.pattern
     }
+
+    pub fn is_skip(&self) -> bool {
+        self.is_skip
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -57,6 +65,10 @@ pub struct TokenSet { defs: Vec<TokenDef> }
 impl TokenSet {
     pub fn get_defs(&self) -> &Vec<TokenDef> {
         &self.defs
+    }
+
+    pub fn get_defs_mut(&mut self) -> &mut Vec<TokenDef> {
+        &mut self.defs
     }
 }
 
@@ -148,7 +160,7 @@ impl Parser {
         }
     }
 
-    fn parse_token_def(&mut self) -> TokenDef {
+    fn parse_token_def(&mut self, is_skip: bool) -> TokenDef {
         let token_id = match std::mem::replace(&mut self.token, TokenType::Eof) {
             TokenType::Identifier(id) => {
                 self.advance();
@@ -169,10 +181,10 @@ impl Parser {
         };
         self.expect_token(TokenType::Semicolon(';'));
         self.advance();
-        TokenDef { id: token_id, pattern: token_val }
+        TokenDef { id: token_id, pattern: token_val, is_skip }
     }
 
-    fn parse_token_section(&mut self) -> TokenSet {
+    fn parse_token_section(&mut self, is_skip: bool) -> TokenSet {
         self.advance();
         self.expect_token(TokenType::Lbrace('{'));
         self.advance();
@@ -180,7 +192,7 @@ impl Parser {
         let mut defs = Vec::new();
 
         while !matches!(self.token, TokenType::Rbrace('}')) {
-            defs.push(self.parse_token_def());
+            defs.push(self.parse_token_def(is_skip));
         }
 
         self.expect_token(TokenType::Rbrace('}'));
@@ -249,6 +261,7 @@ impl Parser {
     pub fn parse(&mut self) -> ASTNode {
         let mut prologue: Option<Prologue> = None;
         let mut tokens: Option<TokenSet> = None;
+        let mut skippable_tokens: Option<TokenSet> = None;
         let mut start: Option<String> = None;
         let mut rules: Option<GrammarRuleSet> = None;
         let mut epilogue: Option<Epilogue> = None;
@@ -259,7 +272,10 @@ impl Parser {
                     prologue = Some(self.parse_prologue());
                 }
                 TokenType::Keyword(k) if k == "tokens" => {
-                    tokens = Some(self.parse_token_section());
+                    tokens = Some(self.parse_token_section(false));
+                }
+                TokenType::Keyword(k) if k == "skip" => {
+                    skippable_tokens = Some(self.parse_token_section(true));
                 }
                 TokenType::Keyword(k) if k == "start" => {
                     start = Some(self.parse_start_section());
@@ -275,9 +291,15 @@ impl Parser {
             }
         }
 
+        let mut merged_tokens = tokens.expect("Missing %tokens section");
+
+        if let Some(mut skip_tokens) = skippable_tokens {
+            merged_tokens.get_defs_mut().append(skip_tokens.get_defs_mut());
+        }
+
         ASTNode::GrammarFile {
             prologue,
-            tokens: tokens.expect("Missing %tokens section"),
+            tokens: merged_tokens,
             start: start.expect("Missing %start section"),
             rules: rules.expect("Missing %rules section"),
             epilogue,

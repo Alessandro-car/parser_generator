@@ -1,6 +1,6 @@
 static KEYWORDS: &[&str] = &[
     "prologue", "epilogue",
-    "tokens", "start", "rules"
+    "tokens", "start", "rules", "skip"
 ];
 
 static OPERATORS: &[&str] = &[
