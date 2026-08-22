@@ -22,8 +22,8 @@
         - [X] Decide how to handle "throwaway" tokens
         - [X] Add line/column tracking
 
-    - [ ] Table serialization
-        - [ ] Turn ```ParseTables.action``` and ```ParseTables.goto``` into something the emitted file can embed directly
-        - [ ] Emit ```Action``` as its own enum inside the generated file
+    - [X] Table serialization
+        - [X] Turn ```ParseTables.action``` and ```ParseTables.goto``` into something the emitted file can embed directly
+        - [X] Emit ```Action``` as its own enum inside the generated file
     - [ ]
 
