@@ -9,3 +9,8 @@ pub fn insert_oncelock_dependency() -> String {
     code.push_str("use std::sync::OnceLock;\n");
     code
 }
+
+pub fn insert_hashmap_dependency() -> String {
+    let code = String::from("use std::collections::HashMap;\n");
+    code
+}

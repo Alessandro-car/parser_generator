@@ -12,6 +12,7 @@ use crate::automaton::table::ParseTables;
 use crate::emitter::symbol_gen::Symbols;
 use crate::emitter::lexer_gen::emit_lexer;
 use crate::emitter::dependency::*;
+use crate::emitter::tables_gen::generate_tables;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -30,13 +31,23 @@ fn main() -> Result<()> {
 
     let (augmented_rules, start_idx) = augment(ast.get_rules(), ast.get_start_sym());
     let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
-    println!("{:#?}", ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx));
+    let parse_tables = match ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx) {
+        Ok(tables) => tables,
+        Err(conflicts) => {
+            eprintln!("Error: Could not build parse tables due to grammar conflicts:");
+            for conflict in conflicts {
+                eprintln!("- {}", conflict);
+            }
+            std::process::exit(1);
+        }
+    };
     let symbols = Symbols::new(&ast);
     println!("{}", insert_oncelock_dependency());
     println!("{}", insert_regex_dependency());
+    println!("{}", insert_hashmap_dependency());
     println!("{}", symbols.generate_token_enum_code(&ast));
     println!("{}", symbols.generate_rule_table_code());
     println!("{}", emit_lexer(ast.get_token_set(), symbols.get_sanitized_ids()));
-
+    println!("{}", generate_tables(&parse_tables));
     Ok(())
 }

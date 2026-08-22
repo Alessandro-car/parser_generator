@@ -65,6 +65,14 @@ impl ParseTables {
         }
     }
 
+    pub fn get_action_table(&self) -> &HashMap<(usize, String), Action> {
+        &self.action
+    }
+
+    pub fn get_goto_table(&self) -> &HashMap<(usize, String), usize> {
+        &self.goto
+    }
+
     pub fn get_action(&self, state: usize, terminal: &str) -> Option<&Action> {
         self.action.get(&(state, terminal.to_string()))
     }

@@ -15,26 +15,34 @@
     DIV    = "/";
     LPAREN = "\(";
     RPAREN = "\)";
-
 }
 
 %skip {
-	WS = "[ \t\r\n]+";
+    WS = "[ \t\r\n]+";
 }
 
 %start Program
 
 %rules {
-    // The Context-Free Grammar
+    // The Context-Free Grammar, stratified to enforce precedence
     Program ->
         Expr ;
 
+    // Lowest precedence operations (evaluated last)
     Expr ->
-        Expr PLUS Expr
-      | Expr MINUS Expr
-      | Expr MUL Expr
-      | Expr DIV Expr
-      | LPAREN Expr RPAREN
+        Expr PLUS Term
+      | Expr MINUS Term
+      | Term ;
+
+    // Higher precedence operations (evaluated first)
+    Term ->
+        Term MUL Factor
+      | Term DIV Factor
+      | Factor ;
+
+    // Highest precedence (numbers and explicit grouping)
+    Factor ->
+        LPAREN Expr RPAREN
       | NUMBER ;
 }
 
