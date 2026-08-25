@@ -1,19 +1,12 @@
+extern crate syn;
+extern crate prettyplease;
+
 mod meta_parser;
 mod automaton;
 mod emitter;
-use crate::automaton::first::FirstSets;
-use crate::automaton::follow::FollowSets;
 use crate::meta_parser::lexer::Lexer;
 use crate::meta_parser::lexer::TokenType;
 use crate::meta_parser::parser::Parser;
-use crate::automaton::augment::augment;
-use crate::automaton::lr0::LR0Automaton;
-use crate::automaton::table::ParseTables;
-use crate::emitter::symbol_gen::Symbols;
-use crate::emitter::lexer_gen::emit_lexer;
-use crate::emitter::dependency::*;
-use crate::emitter::tables_gen::generate_tables;
-use crate::emitter::driver_gen::generate_driver_code;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -26,30 +19,9 @@ fn main() -> Result<()> {
     let lex = Lexer::new(contents);
     let mut parser = Parser::new(lex).expect("Failed to construct parser");
     let ast = parser.parse();
-
-    let first_set = FirstSets::build(ast.get_rules(), ast.get_token_set());
-    let follow_set = FollowSets::build(ast.get_rules(), ast.get_token_set(), ast.get_start_sym().clone(), first_set);
-
-    let (augmented_rules, start_idx) = augment(ast.get_rules(), ast.get_start_sym());
-    let lr0 = LR0Automaton::build(&augmented_rules, start_idx, ast.get_token_set());
-    let parse_tables = match ParseTables::build(&lr0, &augmented_rules, ast.get_token_set(), &follow_set, start_idx) {
-        Ok(tables) => tables,
-        Err(conflicts) => {
-            eprintln!("Error: Could not build parse tables due to grammar conflicts:");
-            for conflict in conflicts {
-                eprintln!("- {}", conflict);
-            }
-            std::process::exit(1);
-        }
-    };
-    let symbols = Symbols::new(&ast);
-    println!("{}", insert_oncelock_dependency());
-    println!("{}", insert_regex_dependency());
-    println!("{}", insert_hashmap_dependency());
-    println!("{}", symbols.generate_token_enum_code(&ast));
-    println!("{}", symbols.generate_rule_table_code());
-    println!("{}", emit_lexer(ast.get_token_set(), symbols.get_sanitized_ids()));
-    println!("{}", generate_tables(&parse_tables));
-    println!("{}", generate_driver_code());
+    let generated_code = emitter::generate(&ast);
+    let file_name = "gen_parser.rs";
+    let _file = fs::File::create(file_name)?;
+    fs::write(file_name, generated_code)?;
     Ok(())
 }

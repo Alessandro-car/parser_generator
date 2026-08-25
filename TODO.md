@@ -29,4 +29,7 @@
         - [X] Stack-based loop: ```state_stack: Vec<usize>```, ```value_stack: Vec<ParseTree>```
         - [X] ```ParseTree``` for now: ```enum ParseTree { Leaf(Token), Node(&'static str, Vec<ParseTree>)}```
         - [X] Shift: push token + target state. Reduce: pop ```rhs_len``` off both stacks, build a ```Node``` and consult GOTO table. Accept: done. No action found: returns an error
-    - [ ]
+    - [ ] Assembly
+        - [ ] Order: generator's own ```use regex::Regex;``` etc. -> prologue raw code -> Token enum -> lexer -> tables -> ```ParseTree```-> epilogue raw code.
+        - [ ] Run the assembled string through ```rustfmt``` or the ```prettyplease``` crate before writing
+        - [ ] Wire into main.rs: call to ```emitter::generate``` and ```fs::write```

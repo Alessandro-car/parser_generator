@@ -13,6 +13,18 @@ pub enum ASTNode {
 }
 
 impl ASTNode {
+    pub fn get_prologue(&self) -> &Option<Prologue> {
+        match self {
+            ASTNode::GrammarFile { prologue, .. } => prologue,
+        }
+    }
+
+    pub fn get_epilogue(&self) -> &Option<Epilogue> {
+        match self {
+            Self::GrammarFile { epilogue, .. } => epilogue,
+        }
+    }
+
     pub fn get_rules(&self) -> &GrammarRuleSet {
         match self {
             ASTNode::GrammarFile { rules, .. } => rules,
@@ -35,8 +47,20 @@ impl ASTNode {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Prologue { raw_code: String }
 
+impl Prologue {
+    pub fn get_prologue(&self) -> &String {
+        &self.raw_code
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Epilogue { raw_code: String }
+
+impl Epilogue {
+    pub fn get_epilogue(&self) -> &String {
+        &self.raw_code
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenDef {

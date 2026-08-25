@@ -1,5 +1,4 @@
 use crate::meta_parser::parser::TokenSet;
-use crate::meta_parser::parser::TokenDef;
 use std::collections::HashMap;
 
 fn generate_regex_token(token_set: &TokenSet, sanitized_ids: &HashMap<String, String>) -> String {
