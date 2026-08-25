@@ -27,7 +27,7 @@ fn generate_action_table_code(action_table: &HashMap<(usize, String), Action>) -
         let action_str = match action {
             Action::Shift(s) => format!("Action::Shift({})", s),
             Action::Reduce(s, i) => format!("Action::Reduce({}, {})", s, i),
-            Action::Accept => "Action::Acccept".to_string()
+            Action::Accept => "Action::Accept".to_string()
         };
         let line = format!("\t(({}, \"{}\"), {}),\n", state, sym.as_str(), action_str);
         code.push_str(line.as_str());
