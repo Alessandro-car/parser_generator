@@ -25,5 +25,8 @@
     - [X] Table serialization
         - [X] Turn ```ParseTables.action``` and ```ParseTables.goto``` into something the emitted file can embed directly
         - [X] Emit ```Action``` as its own enum inside the generated file
+    - [ ] Driver
+        - [ ] Stack-based loop: ```state_stack: Vec<usize>```, ```value_stack: Vec<ParseTree>```
+        - [ ] ```ParseTree``` for now: ```enum ParseTree { Leaf(Token), Node(&'static str, Vec<ParseTree>)}```
+        - [ ] Shift: push token + target state. Reduce: pop ```rhs_len``` off both stacks, build a ```Node``` and consult GOTO table. Accept: done. No action found: returns an error
     - [ ]
-
