@@ -13,6 +13,7 @@ use crate::emitter::symbol_gen::Symbols;
 use crate::emitter::lexer_gen::emit_lexer;
 use crate::emitter::dependency::*;
 use crate::emitter::tables_gen::generate_tables;
+use crate::emitter::driver_gen::generate_driver_code;
 use std::env;
 use std::io::Result;
 use std::fs;
@@ -49,5 +50,6 @@ fn main() -> Result<()> {
     println!("{}", symbols.generate_rule_table_code());
     println!("{}", emit_lexer(ast.get_token_set(), symbols.get_sanitized_ids()));
     println!("{}", generate_tables(&parse_tables));
+    println!("{}", generate_driver_code());
     Ok(())
 }

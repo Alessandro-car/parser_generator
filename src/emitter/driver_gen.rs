@@ -1,4 +1,4 @@
-fn generate_driver_code() -> String {
+pub fn generate_driver_code() -> String {
     let mut code = String::new();
     code.push_str(r#"
         #[derive(Debug, Clone)]
