@@ -2,3 +2,4 @@ pub mod symbol_gen;
 pub mod lexer_gen;
 pub mod dependency;
 pub mod tables_gen;
+pub mod driver_gen;

@@ -127,7 +127,7 @@ impl Symbols {
         let mut sorted_identifiers: Vec<_> = self.identifiers.iter().collect();
         sorted_identifiers.sort_by(|a, b| a.0.cmp(b.0));
 
-        for (id, old_id) in &self.identifiers {
+        for (id, old_id) in &sorted_identifiers {
             if is_token(old_id, ast.get_token_set()) {
                 let line = format!("\t{}(String),\n", id);
                 code.push_str(line.as_str());
@@ -136,6 +136,26 @@ impl Symbols {
 
         code.push_str("\tEof,\n");
         code.push_str("\tError(String),\n");
+        code.push_str("}\n");
+
+        code.push_str(r#"
+            impl Token {
+                pub fn name(&self) -> &'static str {
+                    match self {
+
+        "#);
+
+        for (id, old_id) in &sorted_identifiers {
+            if is_token(old_id, ast.get_token_set()) {
+                let line = format!("Token::{}(_) => \"{}\",\n", id, id);
+                code.push_str(&line);
+            }
+        }
+
+        code.push_str("\t\t\tToken::Eof => \"Eof\",\n");
+        code.push_str("\t\t\tToken::Error => \"Error\",\n");
+        code.push_str("\t\t}\n");
+        code.push_str("\t}\n");
         code.push_str("}\n");
         code
     }
