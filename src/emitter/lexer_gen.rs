@@ -12,7 +12,7 @@ fn generate_regex_token(token_set: &TokenSet, sanitized_ids: &HashMap<String, St
             "static {}_REGEXPR: OnceLock<Regex> = OnceLock::new();
             pub fn get_{}_regex() -> &'static Regex {{
                 {}_REGEXPR.get_or_init(|| {{
-                    Regex::new(r\"^{}\").expect(\"Invalid regex pattern\")
+                    Regex::new(r#\"^{}\"#).expect(\"Invalid regex pattern\")
                 }})
             }}
         ",

@@ -1,5 +1,6 @@
 fn insert_regex_dependency() -> String {
     let mut code = String::new();
+    code.push_str("extern crate regex;\n");
     code.push_str("use regex::Regex;\n");
     code
 }

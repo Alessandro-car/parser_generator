@@ -32,7 +32,7 @@ fn convert_rust_keyword(word: &str) -> String {
 fn convert_dash(word: &str) -> String {
     let converted: String = word
         .chars()
-        .map(|c| if c == '-' { '_'} else { c })
+        .map(|c| if c == '-' { '_' } else { c })
         .collect();
 
     converted
@@ -153,7 +153,7 @@ impl Symbols {
         }
 
         code.push_str("\t\t\tToken::Eof => \"Eof\",\n");
-        code.push_str("\t\t\tToken::Error => \"Error\",\n");
+        code.push_str("\t\t\tToken::Error(_) => \"Error\",\n");
         code.push_str("\t\t}\n");
         code.push_str("\t}\n");
         code.push_str("}\n");
@@ -161,17 +161,26 @@ impl Symbols {
     }
 
     pub fn generate_rule_table_code(&self) -> String {
-        let mut code = String::from("pub static RULES: &[(&str, usize)] = &[\n");
-
         //Collect the entries and sort them by their indices (rule_idx, alt_idx)
         let mut sorted_rules: Vec<_> = self.rule_table.iter().collect();
         sorted_rules.sort_by_key(|(indices, _val)| **indices);
 
-        for (_indices, (lhs, rhs_len)) in sorted_rules {
-            let line = format!("\t(\"{}\", {}),\n", lhs, rhs_len);
-            code.push_str(line.as_str());
+        let mut by_rule: Vec<Vec<(String, usize)>> = Vec::new();
+        for (&(rule_idx, _alt_idx), (lhs, rhs_len)) in sorted_rules {
+            if rule_idx >= by_rule.len() {
+                by_rule.resize(rule_idx + 1, Vec::new());
+            }
+            by_rule[rule_idx].push((lhs.clone(), *rhs_len));
         }
 
+        let mut code = String::from("pub static RULES: &[&[(&str, usize)]] = &[\n");
+        for alts in &by_rule {
+            code.push_str("\t&[");
+            for (lhs, rhs_len) in alts {
+                code.push_str(&format!("(\"{}\", {}), ", lhs, rhs_len));
+            }
+            code.push_str("],\n");
+        }
         code.push_str("];\n");
         code
     }

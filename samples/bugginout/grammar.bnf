@@ -1,0 +1,98 @@
+<letter> ::=   "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+             | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+<decimal_digit_no_zero> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<decimal_digit> ::= "0" | <decimal_digit_no_zero>
+<binary_digit> ::= "0" | "1"
+<octal_digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
+<hexadecimal_digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "a" | "b" | "c" | "d" | "e" | "f" | "A" | "B" | "C" | "D" | "E" | "F"
+
+<identifier_start> ::= <letter> | "_" | "$"
+<identifier_middle> ::= <identifier_start> | <decimal_digit>
+<Identifier> ::= <identifier_start> <identifier_middle>*
+
+<NameType> ::= <Identifier>
+<PointerType> ::= ("^" | "*") "mut"? <Type>
+<ArrayType> ::= "[" <IntegerLiteral> "]" <Type>
+<SliceType> ::= "[]" "mut"? <Type>
+<Type> ::= <NameType> | <PointerType> | <ArrayType> | <SliceType>
+
+<inside_char_literal> ::=  " " | "!" | "\"" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/"
+                         | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+                         | ":" | ";" | "<" | "=" | ">" | "?" | "@"
+                         | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+                         | "[" | "]" | "^" | "_" | "`"
+                         | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+                         | "{" | "|" | "}" | "~"
+<char_quote_escape> ::= "\\'"
+<string_quote_escape> ::= "\\\""
+<ascii_escape> ::= "\\x" <octal_digit> <hexadecimal_digit> | "\\n" | "\\r" | "\\t" | "\\\\" | "\\0"
+<CharLiteral> ::= "'" (<inside_char_literal> | <char_quote_escape> | <ascii_escape>) "'"
+<StringLiteral> ::= "\"" (<inside_char_literal> | <string_quote_escape> | <ascii_escape>) "\""
+
+<BooleanLiteral> ::= "true" | "false"
+
+<literal_suffix> ::= "_" <Identifier>
+<IntegerLiteral> ::= ("0b" <binary_digit>+ | "0o" <octal_digit>+ | "0x" <hexadecimal_digit>+ | <decimal_digit>+) <literal_suffix>?
+<FloatLiteral> ::= <decimal_digit>+ "." <decimal_digit>+ <literal_suffix>?
+
+<ParenthesizedExpression> ::= "(" <Expression> ")"
+
+<UnaryExpression> ::= ("+" | "-" | "!" | "~") <Expression>
+
+<PrefixedUpdateExpression> ::= ("++" | "--") <Expression>
+
+<PointerDereferenceExpression> ::= "@" <Expression>
+
+<AddressOfExpression> ::= "&" <Expression>
+
+<BinaryExpression> ::= <Expression> ("+" | "-" | "*" | "/" | "%" | "<<" | ">>" | "<" | ">" | "<=" | ">=" | "==" | "!=" | "&" | "^" | "|" | "&&" | "||") <Expression>
+
+<AssignmentExpression> ::= <Expression> ("=" | "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | "&=" | "^=" | "|=" | "&&" | "||") <Expression>
+
+<RangeExpression> ::= <Expression> ("..<" | "..=") <Expression>
+
+<PostfixedUpdateExpression> ::= <Expression> ("++" | "--")
+
+<function_argument> ::= (<Identifier> ":")? <Expression>
+<function_arguments> ::= <function_argument> ("," <function_argument>)*
+<FunctionCallExpression> ::= <Identifier> "(" <function_arguments>? ")"
+
+<ArraySubscriptExpression> ::= <Expression> "[" <Expression> "]"
+
+<MemberAccessExpression> ::= <Expression> "." <Identifier>
+
+<CastExpression> ::= <Expression> "as" <Type>
+
+<ArrayExpression> ::= "[" (<Expression> ("," <Expression>)*)? "]"
+
+<BlockExpression> ::= "{" <Statement>* <ExpressionWithoutBlock>? "}"
+
+<IfExpression> ::= "if" "(" <Expression> ")" <BlockExpression> ("else" <Expression>)?
+
+<primary> ::= <Identifier> | <CharLiteral> | <BooleanLiteral> | <IntegerLiteral> | <FloatLiteral> | <StringLiteral> | <ParenthesizedExpression> | <ArrayExpression> | <BlockExpression> | <IfExpression>
+<Expression> ::= <primary> | <UnaryExpression> | <PrefixedUpdateExpression> | <PointerDereferenceExpression> | <AddressOfExpression> | <BinaryExpression> | <AssignmentExpression> | <RangeExpression> | <PostfixedUpdateExpression> | <FunctionCallExpression> | <ArraySubscriptExpression> | <MemberAccessExpression> | <CastExpression>
+<ExpressionWithoutBlock> ::= <Identifier> | <CharLiteral> | <BooleanLiteral> | <IntegerLiteral> | <FloatLiteral> | <StringLiteral> | <ParenthesizedExpression> | <ArrayExpression> | <UnaryExpression> | <PrefixedUpdateExpression> | <PointerDereferenceExpression> | <AddressOfExpression> | <BinaryExpression> | <AssignmentExpression> | <RangeExpression> | <PostfixedUpdateExpression> | <FunctionCallExpression> | <ArraySubscriptExpression> | <MemberAccessExpression> | <CastExpression>
+
+<ExpressionStatement> ::= <Expression> ";"
+
+<VariableDeclarationStatement> ::=   ("var" | "mut") <Identifier> ":" <Type> ";"
+                                   | ("var" | "mut") <Identifier> "=" <Expression> ";"
+                                   | ("var" | "mut") <Identifier> ":" <Type> "=" <Expression> ";"
+
+<function_parameter> ::= "anon"? "mut"? <Identifier> ":" <Type>
+<function_parameters> ::= <function_parameter> ("," <function_parameter>)*
+<FunctionDeclarationStatement> ::= "fn" <Identifier> "(" <function_parameters>? ")" ":" <Type> <BlockExpression>
+
+<ForStatement> ::=   "for" <BlockExpression>
+                   | "for" "(" <Expression> ")" <BlockExpression>
+                   | "for" "(" <Identifier> "in" <Expression> ")" <BlockExpression>
+
+<ReturnStatement> ::= "return" <Expression>? ";"
+
+<BreakStatement> ::= "break" ";"
+
+<ContinueStatement> ::= "continue" ";"
+
+<Statement> ::= <ExpressionStatement> | <VariableDeclarationStatement> | <FunctionDeclarationStatement> | <ForStatement> | <BreakStatement> | <ContinueStatement>
+
+<Program> ::= <FunctionDeclarationStatement>*

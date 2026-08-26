@@ -1,0 +1,76 @@
+fn is_valid_after_move(board: []u8, row: usize, column: usize): bool {
+	for (i in 0..<9_usize) {
+		if (i != column && board[row * 9 + i] == board[row * 9 + column]) {
+			return false;
+		}
+
+		if (i != row && board[i * 9 + column] == board[row * 9 + column]) {
+			return false;
+		}
+	}
+
+	var block_row = (row / 3) * 3;
+	var block_column = (column / 3) * 3;
+	for (i in 0..<3_usize) {
+		for (j in 0..<3_usize) {
+			if (block_row + i != row && block_column + j != column && board[(block_row + i) * 9 + (block_column + j)] == board[row * 9 + column]) {
+				return false;
+			}
+		}
+	}
+
+	true
+}
+
+fn solve(board: []mut u8): bool {
+	for (row in 0..<9_usize) {
+		for (column in 0..<9_usize) {
+			if (board[row * 9 + column] != 0) {
+				continue;
+			}
+
+			for (num in 1..=9_u8) {
+				board[row * 9 + column] = num;
+				if (is_valid_after_move(board, row, column) && solve(board)) {
+					return true;
+				}
+				board[row * 9 + column] = 0_u8;
+			}
+
+			return false;
+		}
+	}
+
+	true
+}
+
+fn main(): void {
+	mut board = [
+		0_u8, 0_u8, 0_u8, 2_u8, 6_u8, 0_u8, 7_u8, 0_u8, 1_u8,
+		6_u8, 8_u8, 0_u8, 0_u8, 7_u8, 0_u8, 0_u8, 9_u8, 0_u8,
+		1_u8, 9_u8, 0_u8, 0_u8, 0_u8, 4_u8, 5_u8, 0_u8, 0_u8,
+		8_u8, 2_u8, 0_u8, 1_u8, 0_u8, 0_u8, 0_u8, 4_u8, 0_u8,
+		0_u8, 0_u8, 4_u8, 6_u8, 0_u8, 2_u8, 9_u8, 0_u8, 0_u8,
+		0_u8, 5_u8, 0_u8, 0_u8, 0_u8, 3_u8, 0_u8, 2_u8, 8_u8,
+		0_u8, 0_u8, 9_u8, 3_u8, 0_u8, 0_u8, 0_u8, 7_u8, 4_u8,
+		0_u8, 4_u8, 0_u8, 0_u8, 5_u8, 0_u8, 0_u8, 3_u8, 6_u8,
+		7_u8, 0_u8, 3_u8, 0_u8, 1_u8, 8_u8, 0_u8, 0_u8, 0_u8
+	];
+
+	if (solve(board)) {
+		println("Solved Sudoku:");
+		for (row in 0..<9) {
+			for (column in 0..<9) {
+				if (board[row * 9 + column] == 0) {
+					print('.');
+				} else {
+					print(board[row * 9 + column]);
+				}
+				print(" ");
+			}
+			print("\n");
+		}
+	} else {
+		print("No solution exists\n");
+	}
+}

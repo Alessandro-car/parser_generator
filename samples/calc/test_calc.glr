@@ -1,0 +1,45 @@
+%tokens {
+    NUMBER = "[0-9]+";
+    PLUS   = "\+";
+    MINUS  = "\-";
+    MUL    = "\*";
+    DIV    = "/";
+    LPAREN = "\(";
+    RPAREN = "\)";
+}
+
+%skip {
+    WS = "[ \t\r\n]+";
+}
+
+%start Program
+
+%rules {
+    Program -> Expr ;
+
+    Expr -> Expr PLUS Term
+          | Expr MINUS Term
+          | Term ;
+
+    Term -> Term MUL Factor
+          | Term DIV Factor
+          | Factor ;
+
+    Factor -> LPAREN Expr RPAREN
+            | NUMBER ;
+}
+
+@epilogue %{
+    use std::fs;
+
+    pub fn main() {
+        let input = fs::read_to_string("test_calc_input.txt")
+            .expect("couldn't read test_calc_input.txt");
+        let lexer = Lexer::new(&input);
+        let mut parser = Parser::new(lexer);
+        match parser.parse() {
+            Ok(tree) => println!("Parse OK:\n{:#?}", tree),
+            Err(e) => println!("Parse Error: {}", e),
+        }
+    }
+}%

@@ -1,0 +1,359 @@
+// grammar.glr
+// Converted from grammar.bnf with stratified expressions and resolved conflicts
+
+@prologue %{
+    use std::fs;
+}%
+
+%tokens {
+    // Keywords (Must be matched before identifiers)
+    TRUE     = "true";
+    FALSE    = "false";
+    VAR      = "var";
+    MUT      = "mut";
+    FN       = "fn";
+    IF       = "if";
+    ELSE     = "else";
+    FOR      = "for";
+    IN       = "in";
+    RETURN   = "return";
+    BREAK    = "break";
+    CONTINUE = "continue";
+    AS       = "as";
+    ANON     = "anon";
+
+    // 3-Character Operators
+    LSHIFT_ASSIGN = "<<=";
+    RSHIFT_ASSIGN = ">>=";
+
+    // 2-Character Operators
+    PLUS_ASSIGN   = "\+=";
+    MINUS_ASSIGN  = "\-=";
+    MUL_ASSIGN    = "\*=";
+    DIV_ASSIGN    = "/=";
+    MOD_ASSIGN    = "%=";
+    BITAND_ASSIGN = "&=";
+    BITXOR_ASSIGN = "\^=";
+    BITOR_ASSIGN  = "\|=";
+    RANGE_EXCL    = "\.\.<";
+    RANGE_INCL    = "\.\.=";
+    INC           = "\+\+";
+    DEC           = "\-\-";
+    LSHIFT        = "<<";
+    RSHIFT        = ">>";
+    LTE           = "<=";
+    GTE           = ">=";
+    EQ            = "==";
+    NEQ           = "!=";
+    AND           = "&&";
+    OR            = "\|\|";
+
+    // 1-Character Operators
+    PLUS      = "\+";
+    MINUS     = "\-";
+    MUL       = "\*";
+    DIV       = "/";
+    MOD       = "%";
+    LT        = "<";
+    GT        = ">";
+    BITAND    = "&";
+    CARET     = "\^";
+    BITOR     = "\|";
+    NOT       = "!";
+    TILDE     = "~";
+    AT        = "@";
+    ASSIGN    = "=";
+    LPAREN    = "\(";
+    RPAREN    = "\)";
+    LBRACKET  = "\[";
+    RBRACKET  = "\]";
+    LBRACE    = "\{";
+    RBRACE    = "\}";
+    COMMA     = ",";
+    COLON     = ":";
+    SEMICOLON = ";";
+    DOT       = "\.";
+
+    // Identifiers and Literals
+    IDENTIFIER      = "[a-zA-Z_$][a-zA-Z0-9_$]*";
+    FLOAT_LITERAL   = "[0-9]+\.[0-9]+(_[a-zA-Z_$][a-zA-Z0-9_$]*)?";
+    INTEGER_LITERAL = "(0b[01]+|0o[0-7]+|0x[0-9a-fA-F]+|[0-9]+)(_[a-zA-Z_$][a-zA-Z0-9_$]*)?";
+    CHAR_LITERAL    = "'(?:[^'\\]|\\.)*'";
+    STRING_LITERAL  = "\"(?:[^\"\\]|\\.)*\"";
+}
+
+%skip {
+    WS = "[ \t\r\n]+";
+}
+
+%start Program
+
+%rules {
+    // ---------------------------------------------------------
+    // Program Structure
+    // ---------------------------------------------------------
+    Program ->
+        FunctionList ;
+
+    FunctionList ->
+        FunctionList FunctionDeclarationStatement
+      | FunctionDeclarationStatement ;
+
+    FunctionDeclarationStatement ->
+        FN IDENTIFIER LPAREN RPAREN COLON Type BlockExpression
+      | FN IDENTIFIER LPAREN FunctionParameters RPAREN COLON Type BlockExpression ;
+
+    FunctionParameters ->
+        FunctionParameter
+      | FunctionParameters COMMA FunctionParameter ;
+
+    FunctionParameter ->
+        ANON MUT IDENTIFIER COLON Type
+      | ANON IDENTIFIER COLON Type
+      | MUT IDENTIFIER COLON Type
+      | IDENTIFIER COLON Type ;
+
+    // ---------------------------------------------------------
+    // Statements
+    // ---------------------------------------------------------
+    Statement ->
+        ExpressionStatement
+      | IfExpression
+      | BlockExpression
+      | VariableDeclarationStatement
+      | FunctionDeclarationStatement
+      | ForStatement
+      | BreakStatement
+      | ContinueStatement
+      | ReturnStatement ;
+
+    ExpressionStatement ->
+        Expression SEMICOLON ;
+
+    VariableDeclarationStatement ->
+        VAR IDENTIFIER COLON Type SEMICOLON
+      | MUT IDENTIFIER COLON Type SEMICOLON
+      | VAR IDENTIFIER ASSIGN Expression SEMICOLON
+      | MUT IDENTIFIER ASSIGN Expression SEMICOLON
+      | VAR IDENTIFIER COLON Type ASSIGN Expression SEMICOLON
+      | MUT IDENTIFIER COLON Type ASSIGN Expression SEMICOLON ;
+
+    ForStatement ->
+        FOR BlockExpression
+      | FOR LPAREN Expression RPAREN BlockExpression
+      | FOR LPAREN IDENTIFIER IN Expression RPAREN BlockExpression ;
+
+    ReturnStatement ->
+        RETURN Expression SEMICOLON
+      | RETURN SEMICOLON ;
+
+    BreakStatement ->
+        BREAK SEMICOLON ;
+
+    ContinueStatement ->
+        CONTINUE SEMICOLON ;
+
+    StatementList ->
+        Statement
+      | StatementList Statement ;
+
+    // ---------------------------------------------------------
+    // Types
+    // ---------------------------------------------------------
+    Type ->
+        NameType
+      | PointerType
+      | ArrayType
+      | SliceType ;
+
+    NameType ->
+        IDENTIFIER ;
+
+    PointerType ->
+        CARET Type
+      | MUL Type
+      | CARET MUT Type
+      | MUL MUT Type ;
+
+    ArrayType ->
+        LBRACKET INTEGER_LITERAL RBRACKET Type ;
+
+    SliceType ->
+        LBRACKET RBRACKET Type
+      | LBRACKET RBRACKET MUT Type ;
+
+    // ---------------------------------------------------------
+    // Expressions (Stratified by Precedence)
+    // ---------------------------------------------------------
+    Expression ->
+        AssignmentExpr ;
+
+    // Level 1: Assignment (Right-associative)
+    AssignmentExpr ->
+        RangeExpr ASSIGN AssignmentExpr
+      | RangeExpr PLUS_ASSIGN AssignmentExpr
+      | RangeExpr MINUS_ASSIGN AssignmentExpr
+      | RangeExpr MUL_ASSIGN AssignmentExpr
+      | RangeExpr DIV_ASSIGN AssignmentExpr
+      | RangeExpr MOD_ASSIGN AssignmentExpr
+      | RangeExpr LSHIFT_ASSIGN AssignmentExpr
+      | RangeExpr RSHIFT_ASSIGN AssignmentExpr
+      | RangeExpr BITAND_ASSIGN AssignmentExpr
+      | RangeExpr BITXOR_ASSIGN AssignmentExpr
+      | RangeExpr BITOR_ASSIGN AssignmentExpr
+      | RangeExpr ;
+
+    // Level 2: Range (Left-associative)
+    RangeExpr ->
+        LogicalOrExpr RANGE_EXCL LogicalOrExpr
+      | LogicalOrExpr RANGE_INCL LogicalOrExpr
+      | LogicalOrExpr ;
+
+    // Level 3: Logical OR
+    LogicalOrExpr ->
+        LogicalOrExpr OR LogicalAndExpr
+      | LogicalAndExpr ;
+
+    // Level 4: Logical AND
+    LogicalAndExpr ->
+        LogicalAndExpr AND BitOrExpr
+      | BitOrExpr ;
+
+    // Level 5: Bitwise OR
+    BitOrExpr ->
+        BitOrExpr BITOR BitXorExpr
+      | BitXorExpr ;
+
+    // Level 6: Bitwise XOR
+    BitXorExpr ->
+        BitXorExpr CARET BitAndExpr
+      | BitAndExpr ;
+
+    // Level 7: Bitwise AND
+    BitAndExpr ->
+        BitAndExpr BITAND EqualityExpr
+      | EqualityExpr ;
+
+    // Level 8: Equality
+    EqualityExpr ->
+        EqualityExpr EQ RelationalExpr
+      | EqualityExpr NEQ RelationalExpr
+      | RelationalExpr ;
+
+    // Level 9: Relational
+    RelationalExpr ->
+        RelationalExpr LT ShiftExpr
+      | RelationalExpr GT ShiftExpr
+      | RelationalExpr LTE ShiftExpr
+      | RelationalExpr GTE ShiftExpr
+      | ShiftExpr ;
+
+    // Level 10: Bitwise Shift
+    ShiftExpr ->
+        ShiftExpr LSHIFT AdditiveExpr
+      | ShiftExpr RSHIFT AdditiveExpr
+      | AdditiveExpr ;
+
+    // Level 11: Additive
+    AdditiveExpr ->
+        AdditiveExpr PLUS MultiplicativeExpr
+      | AdditiveExpr MINUS MultiplicativeExpr
+      | MultiplicativeExpr ;
+
+    // Level 12: Multiplicative
+    MultiplicativeExpr ->
+        MultiplicativeExpr MUL CastExpr
+      | MultiplicativeExpr DIV CastExpr
+      | MultiplicativeExpr MOD CastExpr
+      | CastExpr ;
+
+    // Level 13: Cast
+    CastExpr ->
+        CastExpr AS Type
+      | PrefixExpr ;
+
+    // Level 14: Prefix / Unary
+    PrefixExpr ->
+        PLUS PrefixExpr
+      | MINUS PrefixExpr
+      | NOT PrefixExpr
+      | TILDE PrefixExpr
+      | INC PrefixExpr
+      | DEC PrefixExpr
+      | AT PrefixExpr
+      | BITAND PrefixExpr
+      | PostfixExpr ;
+
+    // Level 15: Postfix / Call / Index / Member
+    PostfixExpr ->
+        PostfixExpr INC
+      | PostfixExpr DEC
+      | PostfixExpr LPAREN RPAREN
+      | PostfixExpr LPAREN FunctionArguments RPAREN
+      | PostfixExpr LBRACKET Expression RBRACKET
+      | PostfixExpr DOT IDENTIFIER
+      | Primary ;
+
+    // Level 16: Primary
+    Primary ->
+        IDENTIFIER
+      | CHAR_LITERAL
+      | TRUE
+      | FALSE
+      | INTEGER_LITERAL
+      | FLOAT_LITERAL
+      | STRING_LITERAL
+      | ParenthesizedExpression
+      | ArrayExpression ;
+
+    // ---------------------------------------------------------
+    // Expression Utilities
+    // ---------------------------------------------------------
+    ParenthesizedExpression ->
+        LPAREN Expression RPAREN ;
+
+    ArrayExpression ->
+        LBRACKET RBRACKET
+      | LBRACKET ExpressionList RBRACKET ;
+
+    ExpressionList ->
+        Expression
+      | ExpressionList COMMA Expression ;
+
+    BlockExpression ->
+        LBRACE RBRACE
+      | LBRACE StatementList RBRACE
+      | LBRACE Expression RBRACE
+      | LBRACE StatementList Expression RBRACE ;
+
+    IfExpression ->
+        IF LPAREN Expression RPAREN BlockExpression
+      | IF LPAREN Expression RPAREN BlockExpression ELSE BlockExpression
+      | IF LPAREN Expression RPAREN BlockExpression ELSE IfExpression ;
+
+    FunctionArguments ->
+        FunctionArgument
+      | FunctionArguments COMMA FunctionArgument ;
+
+    FunctionArgument ->
+        IDENTIFIER COLON Expression
+      | Expression ;
+}
+
+@epilogue %{
+    pub fn main() {
+        let input = fs::read_to_string("samples/bugginout/sudoku.bo")
+            .expect("couldn't read samples/bugginout/sudoku.bo");
+        let lexer = Lexer::new(&input);
+        let mut parser = Parser::new(lexer);
+
+        match parser.parse() {
+            Ok(tree) => {
+                println!("Parse OK! Writing AST to ast_dump.rs...");
+                // Write the raw Debug output to a .rs file
+                fs::write("ast_dump.rs", format!("{:#?}", tree)).unwrap();
+            },
+            Err(e) => println!("Parse Error: {}", e),
+        }
+    }
+}%

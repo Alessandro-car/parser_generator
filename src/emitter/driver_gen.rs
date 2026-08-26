@@ -29,7 +29,7 @@ pub fn generate_driver_code() -> String {
                     let cur_state = *self.state_stack.last().unwrap();
 
                     let sym_name = match &cur_token {
-                        Token::Eof => "Eof",
+                        Token::Eof => "$",
                         Token::Error(msg) => return Err(format!("Lexer error: {}", msg)),
                         t => t.name(),
                     };
@@ -41,16 +41,17 @@ pub fn generate_driver_code() -> String {
                             self.value_stack.push(ParseTree::Leaf(cur_token.clone()));
                             cur_token = self.lexer.next_token();
                         }
-                        Some(Action::Reduce(rule_idx, _)) => {
-                            let (lhs, rhs_len) = RULES[*rule_idx];
+                        Some(Action::Reduce(rule_idx, alt_idx)) => {
+                            let (lhs, rhs_len) = RULES[*rule_idx][*alt_idx];
                             let mut children = Vec::new();
                             for _ in 0..rhs_len {
+                                self.state_stack.pop().unwrap();
                                 children.insert(0, self.value_stack.pop().unwrap());
                             }
 
                             let top_state = self.state_stack.last().unwrap();
                             let next_state = get_goto_table()
-                                .get(*(top_state, lhs))
+                                .get(&(*top_state, lhs))
                                 .unwrap_or_else(|| panic!("GOTO table error: no transition for state {} on {}", top_state, lhs));
 
                             self.state_stack.push(*next_state);

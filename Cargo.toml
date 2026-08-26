@@ -3,4 +3,5 @@ name = "parser_generator"
 
 [dependencies]
 prettyplease = "0.2"
+regex = "1.13.1"
 syn = { version = "2.0", features = ["full"] }
