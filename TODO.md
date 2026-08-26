@@ -33,3 +33,20 @@
         - [X] Order: generator's own ```use regex::Regex;``` etc. -> prologue raw code -> Token enum -> lexer -> tables -> ```ParseTree```-> epilogue raw code.
         - [X] Run the assembled string through ```rustfmt``` or the ```prettyplease``` crate before writing
         - [X] Wire into main.rs: call to ```emitter::generate``` and ```fs::write```
+- [ ] Converting to GLR parsing algorithm
+    - [ ] Update the parse tables
+        - [ ] Change the table signature: modify ```ACTION_TABLE``` to map a vector of actions (```automaton/table.rs```)
+        - [ ] Remove conflict panics: delete the code that generates errors and push the new ```Action``` into the vector.
+        - [ ] Update code emission (```emitter/tables_gen.rs```): generate array of slices ```&[Action]``` so the generated parser can load multiple actions at runtime.
+    - [ ] Design the Graph-Structured Stack (GSS)
+        - [ ] In ```emitter/driver_gen.rs``` remove the linear ```state_stack``` and ```value_stack``` entirely.
+        - [ ] Create a GSS node: Define a struct representing a stack node that holds the current state (usize), the parsed values (ParseTree) and a list of pointers to its predecessor nodes
+        - [ ] Manage shared ownership: use reference counting or an arena allocator to manage the graph structure because branches will split and merge, mulitple nodes will share the same predecessor.
+    - [ ] Implement the Tomita Driver Loop
+        - [ ] Track active heads: Keep a ```Vec<Rc<StackNode>>``` representing all currently active parser branches.
+        - [ ] Forking (splitting): When evaluating a token, if a state has multiple actions, clone the active head for each action and process them independently.
+        - [ ] Merging (Convergence): If two different active heads Shift to the exact same state on the exact same token, merge them into a single head with multiple predecessor. This prevents exponetial memory explosion.
+        - [ ] Pruning: If a branch hits a state with no valid actions, silently drop it.The parse fails only if all heads die.
+    - [ ] Construct the Parse Forest
+        - [ ] Expand the AST Enum: Add an ```Ambiguous(Vec<ParseTree>)``` variant to the ```ParseTree``` definition.
+        - [ ] Pack ambiguities: if the parser finishes with multiple surviving heads, bundle their resulting trees into this new node rather than returning a single deterministic tree.
